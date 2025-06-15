@@ -1,0 +1,170 @@
+/* === Background Video === */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+#bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  transform: scale(1);
+  transform-origin: center center;
+  z-index: -1;
+}
+
+/* === Garden Area === */
+#garden {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+/* === Flower Sprite === */
+.flower {
+  position: absolute;
+  width: 41px;
+  height: 41px;
+  background-image: url('sprite.png');
+  background-repeat: no-repeat;
+  background-size: auto;
+  image-rendering: pixelated;
+  cursor: pointer;
+  z-index: 1;
+  animation: grow-to-2 0.4s steps(1) forwards;
+}
+
+/* Animation Keyframes */
+@keyframes grow-to-2 {
+  from { background-position-x: 0px; }
+  to   { background-position-x: -41px; }
+}
+
+@keyframes grow-to-4 {
+  from { background-position-x: -82px; }
+  to   { background-position-x: -123px; }
+}
+
+/* === Input Box === */
+#input-box {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.7);
+  padding: 10px 15px;
+  border-radius: 12px;
+  display: flex;
+  gap: 10px;
+  z-index: 2;
+}
+
+#input-box input {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  width: 200px;
+}
+
+/* === Popup Message === */
+#popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  z-index: 5;
+}
+
+.hidden {
+  display: none;
+}
+
+/* === Audio Controls === */
+#audio-control {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent; /* transparent background */
+  padding: 6px 10px;
+  border-radius: 20px;
+}
+
+#audio-control img {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+#volume-slider {
+  width: 100px;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  height: 4px;
+}
+
+#volume-slider.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+/* === Shovel Control === */
+#shovel-control {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 4;
+}
+
+.shovel-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+#shovel-icon {
+  width: 40px;
+  height: 40px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+#shovel-icon.active {
+  transform: scale(1.2);
+  filter: drop-shadow(0 0 5px red);
+}
+
+.shovel-tooltip {
+  position: absolute;
+  top: -30px;
+  right: 50%;
+  transform: translateX(50%);
+  background: rgba(0, 0, 0, 0.75);
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.shovel-wrapper:hover .shovel-tooltip {
+  opacity: 1;
+}
+
