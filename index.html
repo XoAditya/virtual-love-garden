@@ -40,6 +40,25 @@
     <p id="popup-text"></p>
     <button onclick="closePopup()">Close</button>
   </div>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBgtQdwGMzD-8GK4EEnl4Cd_gGuKGWJ9G0",
+  authDomain: "virtuallovegarden.firebaseapp.com",
+  projectId: "virtuallovegarden",
+  storageBucket: "virtuallovegarden.firebasestorage.app",
+  messagingSenderId: "73424640990",
+  appId: "1:73424640990:web:b65870e0892831f0bd1b4f","
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+</script>
+
 
   <script src="script.js"></script>
 

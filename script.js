@@ -1,45 +1,81 @@
+// === Firebase Setup ===
+const firebaseConfig = {
+  apiKey: "AIzaSyBgtQdwGMzD-8GK4EEnl4Cd_gGuKGWJ9G0",
+  authDomain: "virtuallovegarden.firebaseapp.com",
+  projectId: "virtuallovegarden",
+  storageBucket: "virtuallovegarden.firebasestorage.app",
+  messagingSenderId: "73424640990",
+  appId: "1:73424640990:web:b65870e0892831f0bd1b4f",
+};
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// === Create and Display Flower ===
+function createFlower({ message, row, x, y, id }) {
+  const garden = document.getElementById('garden');
+  const flower = document.createElement('div');
+  flower.className = 'flower';
+  flower.dataset.row = row;
+  flower.dataset.message = message;
+  flower.dataset.id = id || null;
+
+  const rowOffset = row * 41;
+  flower.style.backgroundPositionY = `-${rowOffset}px`;
+  flower.style.backgroundPositionX = '0px';
+  flower.style.animation = 'grow-to-2 0.4s steps(1) forwards';
+  flower.style.left = x + '%';
+  flower.style.top = y + '%';
+
+  flower.onclick = () => {
+    if (window.shovelMode) {
+      // Delete from database if ID exists
+      if (flower.dataset.id) {
+        database.ref('flowers/' + flower.dataset.id).remove();
+      }
+      flower.remove();
+      document.getElementById("puff-sound").play();
+    } else {
+      flower.style.animation = 'none';
+      flower.offsetHeight;
+      flower.style.animation = 'grow-to-4 0.6s steps(1) forwards';
+
+      setTimeout(() => {
+        document.getElementById('popup-text').innerText = message;
+        document.getElementById('popup').classList.remove('hidden');
+        document.currentFlower = flower;
+      }, 600);
+    }
+  };
+
+  garden.appendChild(flower);
+}
+
+// === Plant New Flower ===
 function plantFlower() {
   const message = document.getElementById('message').value.trim();
   if (!message) return;
 
-  const garden = document.getElementById('garden');
-  const flower = document.createElement('div');
-  flower.className = 'flower';
-
   const row = Math.floor(Math.random() * 5);
-  flower.dataset.row = row;
-  flower.dataset.message = message;
+  const x = Math.random() * 60 + 40;
+  const y = Math.random() * 60 + 40;
 
-  // Vertical offset: row × 41px
-  const rowOffset = row * 41;
-  flower.style.backgroundPositionY = `-${rowOffset}px`;
+  // Push to Firebase
+  const newFlowerRef = database.ref('flowers').push();
+  newFlowerRef.set({
+    message,
+    row,
+    x,
+    y,
+    timestamp: Date.now()
+  });
 
-  // Start at phase 1 (frame 0), animate to phase 2 (frame 1)
-  flower.style.backgroundPositionX = '0px';
-  flower.style.animation = 'grow-to-2 0.4s steps(1) forwards';
-
-  const leftPercent = Math.random() * 60 + 40;
-  const topPercent = Math.random() * 60 + 40;
-  flower.style.left = leftPercent + '%';
-  flower.style.top = topPercent + '%';
-
-  // On click → grow to phase 3–4, then show popup
-  flower.onclick = () => {
-    flower.style.animation = 'none'; // reset animation
-    flower.offsetHeight; // trigger reflow
-    flower.style.animation = 'grow-to-4 0.6s steps(1) forwards';
-
-    setTimeout(() => {
-      document.getElementById('popup-text').innerText = flower.dataset.message;
-      document.getElementById('popup').classList.remove('hidden');
-      document.currentFlower = flower;
-    }, 600);
-  };
-
-  garden.appendChild(flower);
+  createFlower({ message, row, x, y, id: newFlowerRef.key });
   document.getElementById('message').value = '';
 }
 
+// === Close Popup ===
 function closePopup() {
   document.getElementById('popup').classList.add('hidden');
   const flower = document.currentFlower;
@@ -50,6 +86,7 @@ function closePopup() {
   }
 }
 
+// === DOM Ready ===
 document.addEventListener("DOMContentLoaded", () => {
   const music = document.getElementById("bg-music");
   const slider = document.getElementById("volume-slider");
@@ -64,31 +101,35 @@ document.addEventListener("DOMContentLoaded", () => {
   slider.addEventListener("input", () => {
     music.volume = parseFloat(slider.value);
   });
-});
-// Shovel Mode Logic
-let shovelMode = false;
 
-document.addEventListener("DOMContentLoaded", () => {
-  const shovelIcon = document.getElementById("shovel-icon");
-  const garden = document.getElementById("garden");
-  const puff = document.getElementById("puff-sound");
-
-  // Toggle shovel mode
-  shovelIcon.addEventListener("click", () => {
-    shovelMode = !shovelMode;
-    shovelIcon.classList.toggle("active");
+  // === Load Existing Flowers from Firebase ===
+  database.ref('flowers').on('value', (snapshot) => {
+    const garden = document.getElementById('garden');
+    garden.innerHTML = ''; // Clear existing
+    snapshot.forEach(child => {
+      const data = child.val();
+      createFlower({ ...data, id: child.key });
+    });
   });
 
-  // Click on flower when shovel mode is active
-  garden.addEventListener("click", (e) => {
-    if (!shovelMode) return;
+  // === Shovel Tool Logic ===
+  const shovel = document.getElementById("shovel-icon");
+  const tooltip = document.querySelector(".shovel-tooltip");
 
-    const target = e.target;
-    if (target.classList.contains("flower")) {
-      target.remove(); // remove flower
-      puff.currentTime = 0;
-      puff.play();
-    }
+  window.shovelMode = false;
+
+  shovel.addEventListener("mouseover", () => {
+    tooltip.innerText = "Click to remove flowers";
+    shovel.style.transform = "scale(1.2)";
+  });
+
+  shovel.addEventListener("mouseout", () => {
+    tooltip.innerText = "";
+    shovel.style.transform = "scale(1)";
+  });
+
+  shovel.addEventListener("click", () => {
+    window.shovelMode = !window.shovelMode;
+    shovel.classList.toggle("active");
   });
 });
-
